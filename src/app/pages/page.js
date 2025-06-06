@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { format, compareAsc } from "date-fns";
 import { id } from "date-fns/locale";
 import { toZonedTime } from "date-fns-tz";
@@ -15,7 +16,14 @@ export default function MainContent() {
 
   useEffect(() => {
     const dataTugasString = localStorage.getItem("tugas");
-    const dataTugas = JSON.parse(dataTugasString);
+    let dataTugas = [];
+
+    try {
+      dataTugas = JSON.parse(dataTugasString) ?? [];
+    } catch (error) {
+      dataTugas = [];
+    }
+
     setTugasStorage(dataTugas);
     setJumlahtugas(dataTugas.length);
   }, []);
@@ -47,31 +55,40 @@ export default function MainContent() {
           Dashboard
         </h2>
 
-        <ul className="list-none mt-4 p-4 flex md:grid-cols-3 gap-4">
+        <div className="list-none mt-4 p-4 flex md:grid-cols-3 gap-4">
           {/* Tugas */}
-          <li className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-blue-500 shadow-sm">
+          <Link
+            href={"/pages/tugas"}
+            className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-blue-500 shadow-sm"
+          >
             <ClipboardList size="2em" className="text-blue-500 mr-4" />
             <div className="text-neutral-700">
               <p>{jumlahTugas} Tugas</p>
             </div>
-          </li>
+          </Link>
 
           {/* Catatan */}
-          <li className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-lime-500 shadow-sm">
+          <Link
+            href={"/pages/catatan"}
+            className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-lime-500 shadow-sm"
+          >
             <NotebookTabs size="2em" className="text-lime-500 mr-4" />
             <div className="text-neutral-700">
               <p>Catatan</p>
             </div>
-          </li>
+          </Link>
 
           {/* Jadwal */}
-          <li className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-orange-500 shadow-sm">
+          <Link
+            href={"/pages/jadwal"}
+            className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-orange-500 shadow-sm"
+          >
             <CalendarCheck2 size="2em" className="text-orange-500 mr-4" />
             <div className="text-neutral-700">
               <p>Jadwal</p>
             </div>
-          </li>
-        </ul>
+          </Link>
+        </div>
 
         <div className="flex flex-col md:flex-row gap-4 p-4">
           {/* Card: Tugas Terbaru */}
