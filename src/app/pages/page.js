@@ -1,12 +1,12 @@
 "use client";
 import Link from "next/link";
-import { format, compareAsc } from "date-fns";
+import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { toZonedTime } from "date-fns-tz";
 import { useEffect, useState } from "react";
 import { ClipboardList, NotebookTabs, CalendarCheck2 } from "lucide-react";
 
-export default function MainContent() {
+export default function Page() {
   const timeZone = "Asia/Jakarta";
   const [now, setNow] = useState(new Date());
   const [showDate, setShowDate] = useState("");
@@ -23,7 +23,7 @@ export default function MainContent() {
       if (Array.isArray(parsed)) {
         dataTugas = parsed;
       } else {
-        dataTugas = []; //apalah
+        dataTugas = [];
       }
     } else {
       dataTugas = [];
@@ -48,7 +48,7 @@ export default function MainContent() {
   }, [now, timeZone]);
 
   return (
-    <section className=" h-full">
+    <section className="h-full">
       <header className="flex justify-end px-8 bg-white shadow-md p-4">
         <div className="text-neutral-500">
           <p>{showDate}</p>
@@ -61,7 +61,6 @@ export default function MainContent() {
         </h2>
 
         <div className="list-none mt-4 p-4 flex md:grid-cols-3 gap-4">
-          {/* Tugas */}
           <Link
             href={"/pages/tugas"}
             className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-blue-500 shadow-sm"
@@ -72,7 +71,6 @@ export default function MainContent() {
             </div>
           </Link>
 
-          {/* Catatan */}
           <Link
             href={"/pages/catatan"}
             className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-lime-500 shadow-sm"
@@ -83,7 +81,6 @@ export default function MainContent() {
             </div>
           </Link>
 
-          {/* Jadwal */}
           <Link
             href={"/pages/jadwal"}
             className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-orange-500 shadow-sm"
@@ -96,7 +93,6 @@ export default function MainContent() {
         </div>
 
         <div className="flex flex-col md:flex-row gap-4 p-4">
-          {/* Card: Tugas Terbaru */}
           <div className="flex-1 bg-white rounded-2xl shadow-md p-6">
             <h3 className="border-b border-b-neutral-700 text-xl font-semibold mb-4 text-neutral-700">
               Tugas Terbaru
@@ -123,7 +119,6 @@ export default function MainContent() {
             </ul>
           </div>
 
-          {/* Card: Jadwal Hari Ini */}
           <div className="flex-1 bg-white rounded-2xl shadow-md p-6">
             <h3 className="border-b border-b-neutral-700 text-xl font-semibold mb-4 text-neutral-700">
               Jadwal Hari Ini
