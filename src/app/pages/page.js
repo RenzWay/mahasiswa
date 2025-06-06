@@ -18,9 +18,14 @@ export default function MainContent() {
     const dataTugasString = localStorage.getItem("tugas");
     let dataTugas = [];
 
-    try {
-      dataTugas = JSON.parse(dataTugasString) ?? [];
-    } catch (error) {
+    if (dataTugasString) {
+      const parsed = JSON.parse(dataTugasString);
+      if (Array.isArray(parsed)) {
+        dataTugas = parsed;
+      } else {
+        dataTugas = [];
+      }
+    } else {
       dataTugas = [];
     }
 
