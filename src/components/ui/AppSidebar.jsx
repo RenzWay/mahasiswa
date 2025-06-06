@@ -38,6 +38,11 @@ export function AppSidebar() {
       icon: NotebookText,
     },
     {
+      name: "Jadwal",
+      loc: "/pages/jadwal",
+      icon: Calendar,
+    },
+    {
       name: "Setting",
       loc: "/pages/setting",
       icon: Settings,
