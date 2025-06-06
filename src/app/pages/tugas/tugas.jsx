@@ -1,6 +1,6 @@
 "use client";
-import { addTugas } from "@/app/model/model";
-import uploadFile from "@/firebase/uploadFile";
+// import { addTugas } from "@/app/model/model";
+// import uploadFile from "@/firebase/uploadFile";
 import { useEffect, useRef, useState } from "react";
 import "quill/dist/quill.core.css";
 import "quill/dist/quill.snow.css";
@@ -37,10 +37,10 @@ export default function TugasPage() {
     const id = randomId();
     const content = quillRef.current ? quillRef.current.root.innerHTML : "";
 
-    let fireURL = null;
-    if (attachment) {
-      fireURL = await uploadFile(attachment);
-    }
+    // let fireURL = null;
+    // if (attachment) {
+    //   fireURL = await uploadFile(attachment);
+    // }
     const tugas = {
       id,
       title,
@@ -50,20 +50,15 @@ export default function TugasPage() {
       category,
       status,
       content,
-      attachment: fireURL,
+      attachment: attachment,
     };
 
-    if (attachment && attachment.size > 5 * 1024 * 1024) {
-      alert("Ukuran file terlalu besar (maks 5MB)");
-      return;
-    }
-
-    const hasil = await addTugas(tugas);
-    if (hasil.success) {
-      console.log("berhasil di tambahkan ke firebase");
-    } else {
-      console.error("gagal ditambahkan", hasil.error);
-    }
+    // const hasil = await addTugas(tugas);
+    // if (hasil.success) {
+    //   console.log("berhasil di tambahkan ke firebase");
+    // } else {
+    //   console.error("gagal ditambahkan", hasil.error);
+    // }
 
     const tugasLama = JSON.parse(localStorage.getItem("tugas")) || [];
     tugasLama.push(tugas);
