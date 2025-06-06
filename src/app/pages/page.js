@@ -23,7 +23,7 @@ export default function MainContent() {
       if (Array.isArray(parsed)) {
         dataTugas = parsed;
       } else {
-        dataTugas = [];
+        dataTugas = []; //apalah
       }
     } else {
       dataTugas = [];
