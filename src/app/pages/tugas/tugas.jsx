@@ -1,12 +1,12 @@
 "use client";
-// import { addTugas } from "@/app/model/model";
-// import uploadFile from "@/firebase/uploadFile";
+
+import ToolBar from "./toolbar";
+import TaskList from "./tasklist";
 import { useEffect, useRef, useState } from "react";
 import "quill/dist/quill.core.css";
 import "quill/dist/quill.snow.css";
 import hljs from "highlight.js";
 import "highlight.js/styles/github.css";
-import { EditIcon, CheckCheckIcon, Trash2Icon, Edit } from "lucide-react";
 
 export default function TugasPage() {
   const quillRef = useRef(null);
@@ -17,6 +17,25 @@ export default function TugasPage() {
   const [category, setCategory] = useState("matkul");
   const [status, setStatus] = useState(false);
   const [attachment, setAttachment] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editId, setEditId] = useState(null);
+
+  function loadEditForm(tugas) {
+    setTitle(tugas.title);
+    setDate(tugas.date);
+    setTime(tugas.time);
+    setPriority(tugas.priority);
+    setCategory(tugas.category);
+    setStatus(tugas.status);
+    setAttachment(tugas.attachment);
+    setEditId(tugas.id);
+    setEditMode(true);
+    if (quillRef.current) {
+      quillRef.current.root.innerHTML = tugas.content;
+    }
+
+    document.getElementById("formTugas").scrollIntoView({ behavior: "smooth" });
+  }
 
   useEffect(() => {
     window.hljs = hljs;
@@ -37,10 +56,6 @@ export default function TugasPage() {
     const id = randomId();
     const content = quillRef.current ? quillRef.current.root.innerHTML : "";
 
-    // let fireURL = null;
-    // if (attachment) {
-    //   fireURL = await uploadFile(attachment);
-    // }
     const tugas = {
       id,
       title,
@@ -53,32 +68,37 @@ export default function TugasPage() {
       attachment: attachment,
     };
 
-    // const hasil = await addTugas(tugas);
-    // if (hasil.success) {
-    //   console.log("berhasil di tambahkan ke firebase");
-    // } else {
-    //   console.error("gagal ditambahkan", hasil.error);
-    // }
+    let tugasLama = JSON.parse(localStorage.getItem("tugas")) || [];
+    if (editMode) {
+      tugasLama = tugasLama.map((t) => (t.id === editId ? tugas : t));
+    } else {
+      tugasLama.push(tugas);
+    }
 
-    const tugasLama = JSON.parse(localStorage.getItem("tugas")) || [];
-    tugasLama.push(tugas);
+    // tugasLama.push(tugas);
     localStorage.setItem("tugas", JSON.stringify(tugasLama));
     alert("Tugas disimpan ke localStorage!");
+
+    // Reset form
+    setTitle("");
+    setDate("");
+    setTime("");
+    setPriority("tinggi");
+    setCategory("matkul");
+    setStatus(false);
+    setAttachment(null);
+    setEditMode(false);
+    setEditId(null);
+    if (quillRef.current) {
+      quillRef.current.root.innerHTML = "";
+    }
   };
 
   return (
     <section>
       <header>
-        <nav className="flex items-center justify-between px-6 py-4 bg-sky-400 text-white rounded shadow-md mb-6">
+        <nav className="flex items-center justify-between px-6 py-4 bg-sky-400 text-white rounded-b-sm shadow-md mb-6">
           <h1 className="text-2xl font-bold">📌 Tugas</h1>
-
-          <form>
-            <input
-              type="search"
-              placeholder="Cari tugas..."
-              className="px-4 py-2 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-300"
-            />
-          </form>
         </nav>
       </header>
 
@@ -86,8 +106,9 @@ export default function TugasPage() {
         onSubmit={handleSubmit}
         action=""
         className="space-y-4 max-w-xl mx-auto bg-white p-6 rounded shadow"
+        id="formTugas"
       >
-        <h1 className="text-xl font-bold mb-2">Tambah Tugas</h1>
+        <h1 className="text-2xl font-bold mb-2 text-center">Tambah Tugas</h1>
         <div>
           <label htmlFor="title" className="font-medium">
             Judul Tugas
@@ -95,7 +116,7 @@ export default function TugasPage() {
           <input
             type="text"
             id="title"
-            className="block w-full border rounded p-2 mt-1"
+            className="block w-full border rounded p-2 mt-1 transition-all"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -109,7 +130,7 @@ export default function TugasPage() {
               type="date"
               name="date"
               id="date"
-              className="block w-full border rounded p-2 mt-1"
+              className="block w-full border rounded p-2 mt-1 transition-all"
               value={date}
               onChange={(e) => setDate(e.target.value)}
             />
@@ -122,7 +143,7 @@ export default function TugasPage() {
               type="time"
               name="time"
               id="time"
-              className="block w-full border rounded p-2 mt-1"
+              className="block w-full border rounded p-2 mt-1 transition-all"
               value={time}
               onChange={(e) => setTime(e.target.value)}
             />
@@ -134,7 +155,7 @@ export default function TugasPage() {
           </label>
           <select
             id="priority"
-            className="block w-full border rounded p-2 mt-1"
+            className="block w-full border rounded p-2 mt-1 transition-all"
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
           >
@@ -149,7 +170,7 @@ export default function TugasPage() {
           </label>
           <select
             id="category"
-            className="block w-full border rounded p-2 mt-1"
+            className="block w-full border rounded p-2 mt-1 transition-all"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
@@ -164,14 +185,15 @@ export default function TugasPage() {
           <label htmlFor="content" className="font-medium">
             Isi Tugas
           </label>
-          {toolBar()}
-          <div className="h-56 border rounded" id="editor"></div>
+          <ToolBar></ToolBar>
+          <div className="h-56 border rounded transition-all" id="editor"></div>
         </div>
 
         <div className="flex items-center gap-2">
           <input
             type="checkbox"
             id="status"
+            className="transition-all"
             checked={status}
             onChange={(e) => setStatus(e.target.checked)}
           />
@@ -196,129 +218,18 @@ export default function TugasPage() {
         </button>
       </form>
 
-      <div>{taskList()}</div>
-    </section>
-  );
-}
-
-function taskList() {
-  const [active, setActive] = useState("semua");
-  const [tugasStorage, setTugasStorage] = useState([]);
-
-  useEffect(() => {
-    const tugas = JSON.parse(localStorage.getItem("tugas"));
-    setTugasStorage(tugas || []);
-    console.log(tugas);
-  }, []);
-
-  const filteredTugas = tugasStorage.filter((tugas) => {
-    if (active === "semua") return true;
-    if (active === "selesai") return tugas.status === true;
-    if (active === "belum") return tugas.status === false;
-    return true;
-  });
-  return (
-    <div className="p-10 m-12 bg-white rounded-md shadow-md">
-      <h1 className="border-b border-b-neutral-400">Daftar Tugas</h1>
-      <br></br>
-      <div className="flex gap-4">
-        <button
-          className={`px-4 py-2 rounded transition-all duration-200 ${
-            active === "semua" ? "bg-blue-500 text-white" : "bg-neutral-400"
-          }`}
-          onClick={() => setActive("semua")}
-        >
-          Semua
-        </button>
-        <button
-          className={`px-4 py-2 rounded transition-all duration-200 ${
-            active === "belum" ? "bg-blue-500 text-white" : "bg-neutral-400"
-          }`}
-          onClick={() => setActive("belum")}
-        >
-          Belum selesai
-        </button>
-        <button
-          className={`px-4 py-2 rounded transition-all duration-200 ${
-            active === "selesai" ? "bg-blue-500 text-white" : "bg-neutral-400"
-          }`}
-          onClick={() => setActive("selesai")}
-        >
-          Selesai
-        </button>
+      <div className="w-full bg-white p-6 shadow-md mt-[2em]">
+        <div className="relative w-full max-w-3xl mx-auto">
+          <input
+            type="search"
+            placeholder="Cari tugas... 🔍 "
+            className="w-full px-4 py-3 pl-12 rounded-lg border border-gray-300 bg-white text-gray-700 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400 transition-all duration-200 ease-in-out"
+          />
+        </div>
       </div>
 
-      {filteredTugas.length > 0 ? (
-        <ul className="flex flex-col gap-6 mt-6">
-          {filteredTugas.map((row) => (
-            <li
-              key={row.id}
-              className="bg-white shadow-md p-6 rounded-xl border border-gray-200"
-            >
-              {/* Header */}
-              <header className="flex justify-between items-center mb-3">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  {row.title}
-                </h2>
-
-                <div className="flex gap-3">
-                  <span
-                    className={`text-sm font-medium px-3 py-1 rounded-full ${
-                      row.priority === "tinggi"
-                        ? "bg-red-100 text-red-700"
-                        : row.priority === "sedang"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-green-100 text-green-700"
-                    }`}
-                  >
-                    Prioritas: {row.priority}
-                  </span>
-
-                  <div>
-                    <button title="Selesai">
-                      <CheckCheckIcon className="text-green-500" />
-                    </button>
-                    <button title="Edit">
-                      <EditIcon className="text-sky-500" />
-                    </button>
-                    <button title="Buang">
-                      <Trash2Icon className="text-rose-500" />
-                    </button>
-                  </div>
-                </div>
-              </header>
-
-              {/* Meta info */}
-              <div className="text-sm text-gray-500 mb-2 flex flex-wrap gap-2">
-                <span className="bg-gray-100 px-2 py-1 rounded">
-                  Kategori: {row.category}
-                </span>
-                <span className="bg-gray-100 px-2 py-1 rounded">
-                  Deadline: {row.date} {row.time}
-                </span>
-                <span
-                  className={`${
-                    row.status
-                      ? "text-green-600 bg-green-100"
-                      : "text-orange-600 bg-orange-100"
-                  } px-2 py-1 rounded`}
-                >
-                  {row.status ? "✔ Selesai" : "⏳ Belum selesai"}
-                </span>
-              </div>
-
-              {/* Content isi tugas */}
-              <div
-                className="ql-editor border-none p-0 text-gray-800"
-                dangerouslySetInnerHTML={{ __html: row.content }}
-              />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <h1>None task</h1>
-      )}
-    </div>
+      <TaskList onedit={loadEditForm} />
+    </section>
   );
 }
 
@@ -327,53 +238,3 @@ function randomId() {
   const idRand = Math.random().toString(36).substring(2, 8);
   return `Maba-${idDate + idRand}`;
 }
-
-const toolBar = () => {
-  return (
-    <div className="" id="toolbar-container">
-      <span className="ql-formats">
-        <select className="ql-font"></select>
-        <select className="ql-size"></select>
-      </span>
-      <span className="ql-formats">
-        <button className="ql-bold"></button>
-        <button className="ql-italic"></button>
-        <button className="ql-underline"></button>
-        <button className="ql-strike"></button>
-      </span>
-      <span className="ql-formats">
-        <select className="ql-color"></select>
-        <select className="ql-background"></select>
-      </span>
-      <span className="ql-formats">
-        <button className="ql-script" value="sub"></button>
-        <button className="ql-script" value="super"></button>
-      </span>
-      <span className="ql-formats">
-        <button className="ql-header" value="1"></button>
-        <button className="ql-header" value="2"></button>
-        <button className="ql-blockquote"></button>
-        <button className="ql-code-block"></button>
-      </span>
-      <span className="ql-formats">
-        <button className="ql-list" value="ordered"></button>
-        <button className="ql-list" value="bullet"></button>
-        <button className="ql-indent" value="-1"></button>
-        <button className="ql-indent" value="+1"></button>
-      </span>
-      <span className="ql-formats">
-        <button className="ql-direction" value="rtl"></button>
-        <select className="ql-align"></select>
-      </span>
-      <span className="ql-formats">
-        <button className="ql-link"></button>
-        <button className="ql-image"></button>
-        <button className="ql-video"></button>
-        <button className="ql-formula"></button>
-      </span>
-      <span className="ql-formats">
-        <button className="ql-clean"></button>
-      </span>
-    </div>
-  );
-};

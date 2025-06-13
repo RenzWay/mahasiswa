@@ -3,6 +3,11 @@ import "./globals.css";
 // import SideBar from "./utils/sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/ui/AppSidebar";
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

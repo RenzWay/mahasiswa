@@ -14,23 +14,35 @@ export default function Page() {
   const [tugasStorage, setTugasStorage] = useState([]);
   const [jumlahTugas, setJumlahtugas] = useState(0);
 
+  const [catatanStorage, setCatatanStorage] = useState([]);
+  const [jumlahCatatan, setJumlahcatatan] = useState(0);
+
   useEffect(() => {
     const dataTugasString = localStorage.getItem("tugas");
+    const datacatatanString = localStorage.getItem("catatan");
+    let dataCatatan = [];
     let dataTugas = [];
 
     if (dataTugasString) {
       const parsed = JSON.parse(dataTugasString);
+      const parsedCatatan = JSON.parse(datacatatanString);
       if (Array.isArray(parsed)) {
         dataTugas = parsed;
+        dataCatatan = parsedCatatan;
       } else {
         dataTugas = [];
+        dataCatatan = [];
       }
     } else {
+      dataCatatan = [];
       dataTugas = [];
     }
 
     setTugasStorage(dataTugas);
     setJumlahtugas(dataTugas.length);
+
+    setCatatanStorage(dataCatatan);
+    setJumlahcatatan(dataCatatan.length);
   }, []);
 
   useEffect(() => {
@@ -77,7 +89,7 @@ export default function Page() {
           >
             <NotebookTabs size="2em" className="text-lime-500 mr-4" />
             <div className="text-neutral-700">
-              <p>Catatan</p>
+              <p>{jumlahCatatan} Catatan</p>
             </div>
           </Link>
 
