@@ -1,0 +1,16 @@
+{
+  "name": "Mahasiswa Center",
+  "short_name": "MhsCenter",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/window.svg",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ]
+}

@@ -27,6 +27,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html className="hydrated" lang="en">
+      <head>
+        <link rel="manifest" href="/app.webmanifest" />
+        <meta name="theme-color" content="#4f46e5" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex`}
       >

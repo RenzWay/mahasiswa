@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@mui/material";
 import { ButtonGroup } from "@mui/material";
 
-export default function NoteList({onEdit}) {
+export default function NoteList({ onEdit }) {
   const [catatan, setCatatan] = useState([]);
   const [favoriteActive, setFavoriteActive] = useState("semua");
 
@@ -42,7 +42,7 @@ export default function NoteList({onEdit}) {
   });
 
   return (
-    <div className="bg-gradient-to-b from-sky-100 to-sky-200 rounded-2xl border border-slate-200 shadow-md p-6 mx-auto mt-10 max-w-7xl">
+    <div className="bg-gradient-to-b from-sky-100 to-sky-200 rounded-2xl border border-slate-200 shadow-md p-6  mt-10 max-w-full">
       <header className="text-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
           📚 Catatan Pribadi
@@ -94,16 +94,16 @@ export default function NoteList({onEdit}) {
                 </p>
               </CardHeader>
               <CardContent>
-                  {item.favorite && (
-                    <span className="inline-block mt-2 px-2 py-1 text-xs bg-yellow-200 text-yellow-800 rounded-full">
-                      ⭐ Favorit
-                    </span>
-                  )}
+                {item.favorite && (
+                  <span className="inline-block mt-2 px-2 py-1 text-xs bg-yellow-200 text-yellow-800 rounded-full">
+                    ⭐ Favorit
+                  </span>
+                )}
                 <div
                   className="prose prose-sm max-w-none text-gray-700"
                   dangerouslySetInnerHTML={{ __html: item.content }}
                 />
-                <ButtonGroup className="mt-4 flex gap-2 flex-wrap">
+                <ButtonGroup className="mt-4 flex gap-1 lg:flex-wrap">
                   <Button
                     onClick={() => toggleFavorite(item.id)}
                     color="warning"
@@ -111,7 +111,13 @@ export default function NoteList({onEdit}) {
                   >
                     {item.favorite ? "Unfavorite" : "Favorite"}
                   </Button>
-                  <Button onClick={()=>{onEdit(item)}} color="success" variant="contained">
+                  <Button
+                    onClick={() => {
+                      onEdit(item);
+                    }}
+                    color="success"
+                    variant="contained"
+                  >
                     Edit
                   </Button>
                   <Button

@@ -82,8 +82,7 @@ export default function CatatanPage() {
   useEffect(() => {
     const data = localStorage.getItem("catatan");
     setCatatan(data ? JSON.parse(data) : []);
-    console.table(catatan);
-  }, [catatan]);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -110,7 +109,7 @@ export default function CatatanPage() {
   }, []);
 
   return (
-    <section className="pb-20 px-4 md:px-10 lg:px-24">
+    <section className="pb-20 px-4 md:px-10 lg:px-10">
       <header className="mb-6 p-6 rounded-b-xl bg-gradient-to-r from-blue-100 via-sky-50 to-cyan-100 shadow-md">
         <p className="text-sky-800 mt-1 text-2xl font-bold tracking-wide text-center">
           📒 Tulis dan simpan catatanmu di sini.
