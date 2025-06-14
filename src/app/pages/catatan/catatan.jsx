@@ -8,22 +8,38 @@ import "highlight.js/styles/github.css";
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@mui/material";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar22 } from "@/app/utils/calendar.jsx";
+import NoteList from "./noteList";
 
 export default function CatatanPage() {
   const quillRef = useRef(null);
   const [catatan, setCatatan] = useState([]);
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
   const [favorite, setFavorite] = useState(false);
 
+  const [editMode, setEditMode] = useState(false);
+  const [editId, setEditId] = useState(null);
+
+  const loadEditForm = (note) => {
+    setTitle(note.title);
+    setCategory(note.category);
+    setDate(note.date);
+    setFavorite(note.favorite);
+    setEditId(note.id);
+    setEditMode(true);
+    if (quillRef.current) {
+      quillRef.current.root.innerHTML = note.content;
+    }
+
+    document.getElementById("formNote").scrollIntoView({ behavior: "smooth" });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const contentQuill = quillRef.current?.root?.innerHTML ?? "";
+
     if (!title || !contentQuill || !date) {
       alert("Harap isi semua field sebelum menyimpan catatan.");
       return;
@@ -40,25 +56,34 @@ export default function CatatanPage() {
     };
 
     const data = localStorage.getItem("catatan");
-    const catatanLama = data ? JSON.parse(data) : [];
-    const catatanBaru = [...catatanLama, catatanObj];
+    let catatanLama = data ? JSON.parse(data) : [];
+    let catatanBaru;
+
+    if (editMode) {
+      catatanBaru = catatanLama.map((t) =>
+        t.id === editId ? { ...catatanObj, id: editId } : t
+      );
+    } else {
+      catatanBaru = [...catatanLama, catatanObj];
+    }
 
     localStorage.setItem("catatan", JSON.stringify(catatanBaru));
     setCatatan(catatanBaru);
 
     setTitle("");
-    setContent("");
     setCategory("");
     setDate("");
     setFavorite(false);
-
+    setEditMode(false);
+    setEditId(null);
     if (quillRef.current) quillRef.current.root.innerHTML = "";
   };
 
   useEffect(() => {
     const data = localStorage.getItem("catatan");
     setCatatan(data ? JSON.parse(data) : []);
-  }, []);
+    console.table(catatan);
+  }, [catatan]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -85,7 +110,7 @@ export default function CatatanPage() {
   }, []);
 
   return (
-    <section className="pb-20">
+    <section className="pb-20 px-4 md:px-10 lg:px-24">
       <header className="mb-6 p-6 rounded-b-xl bg-gradient-to-r from-blue-100 via-sky-50 to-cyan-100 shadow-md">
         <p className="text-sky-800 mt-1 text-2xl font-bold tracking-wide text-center">
           📒 Tulis dan simpan catatanmu di sini.
@@ -93,8 +118,9 @@ export default function CatatanPage() {
       </header>
 
       <form
-        className="space-y-6 max-w-3xl mx-auto p-10 mt-10 rounded-2xl shadow-xl bg-gradient-to-br from-blue-50 to-sky-100 border border-blue-200 backdrop-blur-md"
+        className="space-y-6 w-full max-w-3xl mx-auto p-6 md:p-10 mt-10 rounded-2xl shadow-xl bg-gradient-to-br from-blue-50 to-sky-100 border border-blue-200 backdrop-blur-md"
         onSubmit={handleSubmit}
+        id="formNote"
       >
         <h1 className="text-4xl font-extrabold text-sky-700 text-center mb-6">
           Buat Catatan
@@ -127,7 +153,7 @@ export default function CatatanPage() {
           </label>
           <ToolBar />
           <div
-            className="w-full min-h-[200px] px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white transition-all shadow-sm"
+            className="w-full min-h-[200px] px-4 py-2 border border-gray-300 rounded-xl bg-white"
             id="editor"
           ></div>
         </div>
@@ -154,9 +180,7 @@ export default function CatatanPage() {
           </select>
         </div>
 
-        <div>
-          <Calendar22 date={date} setDate={setDate} />
-        </div>
+        <Calendar22 date={date} setDate={setDate} />
 
         <div className="flex items-center">
           <input
@@ -172,71 +196,16 @@ export default function CatatanPage() {
           </label>
         </div>
 
-        <div>
-          <Button
-            variant="contained"
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200"
-          >
-            Simpan Catatan
-          </Button>
-        </div>
+        <Button
+          variant="contained"
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200"
+        >
+          Simpan Catatan
+        </Button>
       </form>
 
-      <div className="bg-gradient-to-b from-sky-100 to-sky-200 rounded-2xl border border-slate-200 shadow-md p-6 mx-auto mt-10 max-w-7xl">
-        <header className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            📚 Catatan Pribadi
-          </h1>
-          <h2 className="text-lg text-gray-600">Daftar Catatan:</h2>
-        </header>
-
-        <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 px-2 sm:px-4">
-          {catatan.length === 0 ? (
-            <p className="text-gray-500">Belum ada catatan.</p>
-          ) : (
-            catatan.map((item) => (
-              <Card
-                key={item.id}
-                className="bg-white shadow-lg rounded-xl overflow-hidden"
-              >
-                <CardHeader>
-                  <CardTitle className="text-lg font-bold text-gray-800">
-                    {item.title}
-                  </CardTitle>
-                  <p className="text-sm text-gray-500">
-                    {item.date} • {item.category}
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <div
-                    className="prose prose-sm max-w-none text-gray-700"
-                    dangerouslySetInnerHTML={{ __html: item.content }}
-                  />
-
-                  {item.favorite && (
-                    <span className="inline-block mt-2 px-2 py-1 text-xs bg-yellow-200 text-yellow-800 rounded-full">
-                      ⭐ Favorit
-                    </span>
-                  )}
-
-                  <div className="mt-4 flex gap-2 justify-end">
-                    <Button color="warning" variant="contained">
-                      Favorite
-                    </Button>
-                    <Button color="success" variant="contained">
-                      Edit
-                    </Button>
-                    <Button color="error" variant="contained">
-                      Hapus
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
-      </div>
+      <NoteList onEdit={loadEditForm} />
     </section>
   );
 }

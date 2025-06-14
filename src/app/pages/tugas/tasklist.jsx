@@ -20,7 +20,7 @@ export default function TaskList({ onedit }) {
 
     localStorage.setItem("tugas", JSON.stringify(update));
     setTugasStorage(update);
-  }
+}
 
   // Fungsi untuk menandai tugas selesai
   function finishedTask(id) {
@@ -141,10 +141,11 @@ export default function TaskList({ onedit }) {
                       )}
                     </button>
 
-                    {/* Tombol Edit (belum ada fungsi) */}
+                    {/* Tombol Edit */}
                     <button title="Edit" onClick={() => onedit(row)}>
                       <EditIcon className="text-sky-500" />
                     </button>
+
                     {/* Tombol Hapus */}
                     <button onClick={() => DeleteTask(row.id)} title="Buang">
                       <Trash2Icon className="text-rose-500" />

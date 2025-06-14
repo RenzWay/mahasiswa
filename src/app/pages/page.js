@@ -6,6 +6,8 @@ import { toZonedTime } from "date-fns-tz";
 import { useEffect, useState } from "react";
 import { ClipboardList, NotebookTabs, CalendarCheck2 } from "lucide-react";
 
+import { Badge } from "@mui/material";
+
 export default function Page() {
   const timeZone = "Asia/Jakarta";
   const [now, setNow] = useState(new Date());
@@ -77,7 +79,9 @@ export default function Page() {
             href={"/pages/tugas"}
             className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-blue-500 shadow-sm"
           >
-            <ClipboardList size="2em" className="text-blue-500 mr-4" />
+            <Badge color="primary" badgeContent={jumlahTugas}>
+              <ClipboardList size="2em" className="text-blue-500 mr-4" />
+            </Badge>
             <div className="text-neutral-700">
               <p>{jumlahTugas} Tugas</p>
             </div>
@@ -87,7 +91,9 @@ export default function Page() {
             href={"/pages/catatan"}
             className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-lime-500 shadow-sm"
           >
-            <NotebookTabs size="2em" className="text-lime-500 mr-4" />
+            <Badge color="success" badgeContent={jumlahCatatan}>
+              <NotebookTabs size="2em" className="text-lime-500 mr-4" />
+            </Badge>
             <div className="text-neutral-700">
               <p>{jumlahCatatan} Catatan</p>
             </div>
