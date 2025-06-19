@@ -5,7 +5,6 @@ import { id } from "date-fns/locale";
 import { toZonedTime } from "date-fns-tz";
 import { useEffect, useState } from "react";
 import { ClipboardList, NotebookTabs, CalendarCheck2 } from "lucide-react";
-
 import { Badge } from "@mui/material";
 
 export default function Page() {
@@ -20,31 +19,27 @@ export default function Page() {
   const [jumlahCatatan, setJumlahcatatan] = useState(0);
 
   useEffect(() => {
-    const dataTugasString = localStorage.getItem("tugas");
-    const datacatatanString = localStorage.getItem("catatan");
-    let dataCatatan = [];
-    let dataTugas = [];
+    try {
+      const dataTugasString = localStorage.getItem("tugas");
+      const datacatatanString = localStorage.getItem("catatan");
+      const parsedTugas = JSON.parse(dataTugasString) || [];
+      const parsedCatatan = JSON.parse(datacatatanString) || [];
 
-    if (dataTugasString) {
-      const parsed = JSON.parse(dataTugasString);
-      const parsedCatatan = JSON.parse(datacatatanString);
-      if (Array.isArray(parsed)) {
-        dataTugas = parsed;
-        dataCatatan = parsedCatatan;
-      } else {
-        dataTugas = [];
-        dataCatatan = [];
-      }
-    } else {
-      dataCatatan = [];
-      dataTugas = [];
+      const tugas = Array.isArray(parsedTugas) ? parsedTugas : [];
+      const catatan = Array.isArray(parsedCatatan) ? parsedCatatan : [];
+
+      setTugasStorage(tugas);
+      setJumlahtugas(tugas.length);
+
+      setCatatanStorage(catatan);
+      setJumlahcatatan(catatan.length);
+    } catch (error) {
+      console.error("Error parsing localStorage:", error);
+      setTugasStorage([]);
+      setJumlahtugas(0);
+      setCatatanStorage([]);
+      setJumlahcatatan(0);
     }
-
-    setTugasStorage(dataTugas);
-    setJumlahtugas(dataTugas.length);
-
-    setCatatanStorage(dataCatatan);
-    setJumlahcatatan(dataCatatan.length);
   }, []);
 
   useEffect(() => {
@@ -76,7 +71,7 @@ export default function Page() {
 
         <div className="list-none mt-4 p-4 flex md:grid-cols-3 gap-4">
           <Link
-            href={"/pages/tugas"}
+            href="/pages/tugas"
             className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-blue-500 shadow-sm"
           >
             <Badge color="primary" badgeContent={jumlahTugas}>
@@ -88,7 +83,7 @@ export default function Page() {
           </Link>
 
           <Link
-            href={"/pages/catatan"}
+            href="/pages/catatan"
             className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-lime-500 shadow-sm"
           >
             <Badge color="success" badgeContent={jumlahCatatan}>
@@ -100,7 +95,7 @@ export default function Page() {
           </Link>
 
           <Link
-            href={"/pages/jadwal"}
+            href="/pages/jadwal"
             className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-orange-500 shadow-sm"
           >
             <CalendarCheck2 size="2em" className="text-orange-500 mr-4" />
@@ -116,7 +111,7 @@ export default function Page() {
               Tugas Terbaru
             </h3>
             <ul className="space-y-2">
-              {tugasStorage && jumlahTugas > 0 ? (
+              {tugasStorage.length > 0 ? (
                 tugasStorage.map((row) => (
                   <li
                     key={row.id}

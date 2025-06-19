@@ -8,7 +8,7 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/window.svg",
+      "src": "/icon-story.png",
       "type": "image/png",
       "sizes": "192x192"
     }
