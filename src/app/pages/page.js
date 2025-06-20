@@ -11,10 +11,8 @@ export default function Page() {
   const timeZone = "Asia/Jakarta";
   const [now, setNow] = useState(new Date());
   const [showDate, setShowDate] = useState("");
-
   const [tugasStorage, setTugasStorage] = useState([]);
   const [jumlahTugas, setJumlahtugas] = useState(0);
-
   const [catatanStorage, setCatatanStorage] = useState([]);
   const [jumlahCatatan, setJumlahcatatan] = useState(0);
 
@@ -30,7 +28,6 @@ export default function Page() {
 
       setTugasStorage(tugas);
       setJumlahtugas(tugas.length);
-
       setCatatanStorage(catatan);
       setJumlahcatatan(catatan.length);
     } catch (error) {
@@ -57,96 +54,84 @@ export default function Page() {
   }, [now, timeZone]);
 
   return (
-    <section className="h-full">
-      <header className="flex justify-end px-8 bg-white shadow-md p-4">
-        <div className="text-neutral-500">
-          <p>{showDate}</p>
-        </div>
+    <section className="min-h-screen flex flex-col dark:text-white dark:bg-gray-950">
+      <header className="flex justify-end px-6 shadow p-4 dark:bg-gray-800 dark:text-white">
+        <p className="text-sm">{showDate}</p>
       </header>
 
-      <section className="m-[2em]" role="main">
-        <h2 className="text-3xl font-bold text-neutral-700 border-b border-b-neutral-500">
+      <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
+        <h2 className="text-3xl font-bold dark:text-gray-50 border-b pb-2 mb-6">
           Dashboard
         </h2>
 
-        <div className="list-none mt-4 p-4 flex md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <Link
             href="/pages/tugas"
-            className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-blue-500 shadow-sm"
+            className="flex items-center p-5 rounded-xl bg-white border-l-4 border-blue-500 shadow-sm hover:-translate-y-1 transition-all"
           >
             <Badge color="primary" badgeContent={jumlahTugas}>
               <ClipboardList size="2em" className="text-blue-500 mr-4" />
             </Badge>
-            <div className="text-neutral-700">
-              <p>{jumlahTugas} Tugas</p>
+            <div className="text-gray-700 font-semibold text-lg">
+              {jumlahTugas} Tugas
             </div>
           </Link>
 
           <Link
             href="/pages/catatan"
-            className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-lime-500 shadow-sm"
+            className="flex items-center p-5 rounded-xl bg-white border-l-4 border-lime-500 shadow-sm hover:-translate-y-1 transition-all"
           >
             <Badge color="success" badgeContent={jumlahCatatan}>
               <NotebookTabs size="2em" className="text-lime-500 mr-4" />
             </Badge>
-            <div className="text-neutral-700">
-              <p>{jumlahCatatan} Catatan</p>
+            <div className="text-gray-700 font-semibold text-lg">
+              {jumlahCatatan} Catatan
             </div>
           </Link>
 
           <Link
             href="/pages/jadwal"
-            className="hover:-translate-y-1 transition duration-150 ease-in-out flex items-center p-6 rounded-xl text-xl font-semibold w-full md:w-1/3 bg-white border-l-4 border-orange-500 shadow-sm"
+            className="flex items-center p-5 rounded-xl bg-white border-l-4 border-orange-500 shadow-sm hover:-translate-y-1 transition-all"
           >
             <CalendarCheck2 size="2em" className="text-orange-500 mr-4" />
-            <div className="text-neutral-700">
-              <p>Jadwal</p>
-            </div>
+            <div className="text-gray-700 font-semibold text-lg">Jadwal</div>
           </Link>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4 p-4">
-          <div className="flex-1 bg-white rounded-2xl shadow-md p-6">
-            <h3 className="border-b border-b-neutral-700 text-xl font-semibold mb-4 text-neutral-700">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white p-6 rounded-2xl shadow">
+            <h3 className="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">
               Tugas Terbaru
             </h3>
             <ul className="space-y-2">
               {tugasStorage.length > 0 ? (
                 tugasStorage.map((row) => (
-                  <li
-                    key={row.id}
-                    data-id={row.id}
-                    className="p-3 bg-neutral-100 rounded-lg"
-                  >
-                    <div>
-                      <p className="font-semibold">{row.title}</p>
-                    </div>
+                  <li key={row.id} className="p-3 bg-gray-100 rounded-lg">
+                    <p className="font-semibold">{row.title}</p>
                     <time className="text-sm text-gray-500">
                       {row.date} - {row.time}
                     </time>
                   </li>
                 ))
               ) : (
-                <li className="text-neutral-500">Tidak ada tugas</li>
+                <li className="text-gray-500">Tidak ada tugas</li>
               )}
             </ul>
           </div>
 
-          <div className="flex-1 bg-white rounded-2xl shadow-md p-6">
-            <h3 className="border-b border-b-neutral-700 text-xl font-semibold mb-4 text-neutral-700">
+          <div className="bg-white p-6 rounded-2xl shadow">
+            <h3 className="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">
               Jadwal Hari Ini
             </h3>
             <ul className="space-y-2">
-              <li className="p-3 bg-neutral-100 rounded-lg">
-                08.00 - PWA Class
-              </li>
-              <li className="p-3 bg-neutral-100 rounded-lg">
+              <li className="p-3 bg-gray-100 rounded-lg">08.00 - PWA Class</li>
+              <li className="p-3 bg-gray-100 rounded-lg">
                 10.00 - Coding Challenge
               </li>
             </ul>
           </div>
         </div>
-      </section>
+      </main>
     </section>
   );
 }

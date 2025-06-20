@@ -1,11 +1,19 @@
 "use client";
-import { useState } from "react";
-import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
-import { MobileTimePicker } from "@mui/x-date-pickers/MobileTimePicker";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
+
+import { useEffect, useState } from "react";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  IconButton,
+  Button,
+  Box,
+} from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Menu from "@mui/material/Menu";
 
 const hariList = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
 const jamList = [
@@ -28,6 +36,19 @@ export default function JadwalKuliah() {
     hari: "Senin",
     jam: "07:00",
   });
+  const [editIndex, setEditIndex] = useState(null);
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [menuTarget, setMenuTarget] = useState(null);
+
+  useEffect(() => {
+    const data = localStorage.getItem("jadwalKuliah");
+    if (data) setJadwal(JSON.parse(data));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("jadwalKuliah", JSON.stringify(jadwal));
+  }, [jadwal]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -35,12 +56,45 @@ export default function JadwalKuliah() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setJadwal([...jadwal, form]);
+    const newData = { ...form };
+
+    if (editIndex !== null) {
+      const update = [...jadwal];
+      update[editIndex] = newData;
+      setJadwal(update);
+      setEditIndex(null);
+    } else {
+      setJadwal([...jadwal, newData]);
+    }
+
     setForm({ mataKuliah: "", hari: "Senin", jam: "07:00" });
   };
 
+  const handleEdit = (item, index) => {
+    setForm(item);
+    setEditIndex(index);
+  };
+
+  const handleDelete = (index) => {
+    const update = [...jadwal];
+    update.splice(index, 1);
+    setJadwal(update);
+  };
+
+  const handleMenuClick = (event, index) => {
+    setAnchorEl(event.currentTarget);
+    setMenuTarget(index);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuTarget(null);
+  };
+
   const getJadwalFor = (hari, jam) => {
-    return jadwal.find((item) => item.hari === hari && item.jam === jam);
+    return jadwal
+      .map((item, index) => ({ ...item, index }))
+      .filter((item) => item.hari === hari && item.jam === jam);
   };
 
   return (
@@ -106,12 +160,14 @@ export default function JadwalKuliah() {
           </FormControl>
         </div>
 
-        <button
+        <Button
+          variant="contained"
+          color="primary"
           type="submit"
           className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-lg transition duration-200"
         >
-          Tambah Jadwal
-        </button>
+          {editIndex !== null ? "Update Jadwal" : "Tambah Jadwal"}
+        </Button>
       </form>
 
       <div>
@@ -133,17 +189,30 @@ export default function JadwalKuliah() {
                 <tr key={jam} className="border-t">
                   <td className="p-2 font-medium">{jam}</td>
                   {hariList.map((hari) => {
-                    const isi = getJadwalFor(hari, jam);
+                    const isiList = getJadwalFor(hari, jam);
                     return (
                       <td
                         key={hari}
                         className="p-2 h-16 border-l text-center text-gray-600"
                       >
-                        {isi ? (
-                          <span className="inline-block px-3 py-2 bg-indigo-200 text-indigo-800 rounded text-sm font-semibold">
-                            {isi.mataKuliah}
-                          </span>
-                        ) : null}
+                        <div className="flex flex-col items-center gap-2">
+                          {isiList.map((isi, i) => (
+                            <div
+                              key={i}
+                              className="relative bg-indigo-200 text-indigo-800 px-3 py-1 rounded text-sm font-semibold w-full max-w-[150px]"
+                            >
+                              {isi.mataKuliah}
+                              <Box className="absolute top-1 right-1">
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => handleMenuClick(e, isi.index)}
+                                >
+                                  <MoreVertIcon fontSize="small" />
+                                </IconButton>
+                              </Box>
+                            </div>
+                          ))}
+                        </div>
                       </td>
                     );
                   })}
@@ -153,6 +222,29 @@ export default function JadwalKuliah() {
           </table>
         </div>
       </div>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem
+          onClick={() => {
+            handleEdit(jadwal[menuTarget], menuTarget);
+            handleMenuClose();
+          }}
+        >
+          <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            handleDelete(menuTarget);
+            handleMenuClose();
+          }}
+        >
+          <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Hapus
+        </MenuItem>
+      </Menu>
     </div>
   );
 }

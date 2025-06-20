@@ -75,11 +75,9 @@ export default function TugasPage() {
       tugasLama.push(tugas);
     }
 
-    // tugasLama.push(tugas);
     localStorage.setItem("tugas", JSON.stringify(tugasLama));
     alert("Tugas disimpan ke localStorage!");
 
-    // Reset form
     setTitle("");
     setDate("");
     setTime("");
@@ -104,8 +102,7 @@ export default function TugasPage() {
 
       <form
         onSubmit={handleSubmit}
-        action=""
-        className="space-y-4 max-w-xl mx-auto bg-white p-6 rounded shadow"
+        className="space-y-4 max-w-2xl mx-auto bg-white p-6 rounded shadow"
         id="formTugas"
       >
         <h1 className="text-2xl font-bold mb-2 text-center">Tambah Tugas</h1>
@@ -116,21 +113,20 @@ export default function TugasPage() {
           <input
             type="text"
             id="title"
-            className="block w-full border rounded p-2 mt-1 transition-all"
+            className="block w-full border rounded p-2 mt-1"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <label htmlFor="date" className="font-medium">
               Tanggal Deadline
             </label>
             <input
               type="date"
-              name="date"
               id="date"
-              className="block w-full border rounded p-2 mt-1 transition-all"
+              className="block w-full border rounded p-2 mt-1"
               value={date}
               onChange={(e) => setDate(e.target.value)}
             />
@@ -141,9 +137,8 @@ export default function TugasPage() {
             </label>
             <input
               type="time"
-              name="time"
               id="time"
-              className="block w-full border rounded p-2 mt-1 transition-all"
+              className="block w-full border rounded p-2 mt-1"
               value={time}
               onChange={(e) => setTime(e.target.value)}
             />
@@ -155,7 +150,7 @@ export default function TugasPage() {
           </label>
           <select
             id="priority"
-            className="block w-full border rounded p-2 mt-1 transition-all"
+            className="block w-full border rounded p-2 mt-1"
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
           >
@@ -170,7 +165,7 @@ export default function TugasPage() {
           </label>
           <select
             id="category"
-            className="block w-full border rounded p-2 mt-1 transition-all"
+            className="block w-full border rounded p-2 mt-1"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
@@ -180,20 +175,17 @@ export default function TugasPage() {
             <option value="lainnya">Lainnya</option>
           </select>
         </div>
-
-        <div className="">
+        <div>
           <label htmlFor="content" className="font-medium">
             Isi Tugas
           </label>
-          <ToolBar></ToolBar>
-          <div className="h-56 border rounded transition-all" id="editor"></div>
+          <ToolBar />
+          <div className="h-56 border rounded" id="editor"></div>
         </div>
-
         <div className="flex items-center gap-2">
           <input
             type="checkbox"
             id="status"
-            className="transition-all"
             checked={status}
             onChange={(e) => setStatus(e.target.checked)}
           />
@@ -218,12 +210,12 @@ export default function TugasPage() {
         </button>
       </form>
 
-      <div className="w-full bg-white p-6 shadow-md mt-[2em]">
-        <div className="relative w-full max-w-3xl mx-auto">
+      <div className="w-full px-4 mt-10">
+        <div className="w-full max-w-3xl mx-auto">
           <input
             type="search"
-            placeholder="Cari tugas... 🔍 "
-            className="w-full px-4 py-3 pl-12 rounded-lg border border-gray-300 bg-white text-gray-700 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400 transition-all duration-200 ease-in-out"
+            placeholder="Cari tugas... 🔍"
+            className="w-full px-4 py-3 pl-12 rounded-lg border border-gray-300 bg-white text-gray-700 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400 transition-all"
           />
         </div>
       </div>

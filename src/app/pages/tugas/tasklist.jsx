@@ -6,62 +6,47 @@ export default function TaskList({ onedit }) {
   const [active, setActive] = useState("semua");
   const [tugasStorage, setTugasStorage] = useState([]);
 
-  // useEffect untuk memuat data dari localStorage saat komponen pertama kali di-mount
   useEffect(() => {
     const tugas = JSON.parse(localStorage.getItem("tugas"));
     setTugasStorage(tugas || []);
-    console.log(tugas);
   }, []);
 
-  // Fungsi untuk menghapus tugas
   function DeleteTask(id) {
     const currentTugas = JSON.parse(localStorage.getItem("tugas")) || [];
     const update = currentTugas.filter((row) => row.id !== id);
-
     localStorage.setItem("tugas", JSON.stringify(update));
     setTugasStorage(update);
-}
+  }
 
-  // Fungsi untuk menandai tugas selesai
   function finishedTask(id) {
-    const update = tugasStorage.map((item) => {
-      if (item.id === id) {
-        return { ...item, status: true };
-      }
-      return item;
-    });
-
+    const update = tugasStorage.map((item) =>
+      item.id === id ? { ...item, status: true } : item
+    );
     setTugasStorage(update);
     localStorage.setItem("tugas", JSON.stringify(update));
   }
 
-  // Fungsi untuk menandai tugas belum selesai
   function unFinishedTask(id) {
-    const update = tugasStorage.map((item) => {
-      if (item.id === id) {
-        return { ...item, status: false };
-      }
-      return item;
-    });
-
+    const update = tugasStorage.map((item) =>
+      item.id === id ? { ...item, status: false } : item
+    );
     setTugasStorage(update);
     localStorage.setItem("tugas", JSON.stringify(update));
   }
 
-  // Filter tugas berdasarkan status aktif (semua, selesai, belum)
   const filteredTugas = tugasStorage.filter((tugas) => {
     if (active === "semua") return true;
     if (active === "selesai") return tugas.status === true;
     if (active === "belum") return tugas.status === false;
-    return true; // Seharusnya tidak pernah tercapai, tapi untuk jaga-jaga
+    return true;
   });
 
   return (
-    <div className="p-10 m-12 bg-white rounded-md shadow-md">
-      <h1 className="border-b border-b-neutral-400">Daftar Tugas</h1>
-      <br /> {/* Menggunakan self-closing tag untuk br */}
-      <div className="flex gap-4">
-        {/* Tombol filter "Semua" */}
+    <div className="p-4 sm:p-10 sm:m-12 bg-white rounded-md shadow-md">
+      <h1 className="text-xl sm:text-2xl font-bold border-b border-b-neutral-400 pb-2">
+        Daftar Tugas
+      </h1>
+      <div className="flex flex-wrap gap-2 sm:gap-4 mt-4">
         <button
           className={`px-4 py-2 rounded transition-all duration-200 ${
             active === "semua" ? "bg-blue-500 text-white" : "bg-neutral-400"
@@ -70,7 +55,6 @@ export default function TaskList({ onedit }) {
         >
           Semua
         </button>
-        {/* Tombol filter "Belum selesai" */}
         <button
           className={`px-4 py-2 rounded transition-all duration-200 ${
             active === "belum" ? "bg-blue-500 text-white" : "bg-neutral-400"
@@ -79,7 +63,6 @@ export default function TaskList({ onedit }) {
         >
           Belum selesai
         </button>
-        {/* Tombol filter "Selesai" */}
         <button
           className={`px-4 py-2 rounded transition-all duration-200 ${
             active === "selesai" ? "bg-blue-500 text-white" : "bg-neutral-400"
@@ -89,23 +72,18 @@ export default function TaskList({ onedit }) {
           Selesai
         </button>
       </div>
-      {/* Menampilkan daftar tugas jika ada, atau "None task" jika kosong */}
       {filteredTugas.length > 0 ? (
         <ul className="flex flex-col gap-6 mt-6">
           {filteredTugas.map((row) => (
             <li
               key={row.id}
-              className="bg-white shadow-md p-6 rounded-xl border border-gray-200"
-              id="itemTask" // ID ini tidak unik per item, sebaiknya hapus atau jadikan unik
+              className="bg-white shadow-md p-4 sm:p-6 rounded-xl border border-gray-200"
             >
-              {/* Header Tugas */}
-              <header className="flex justify-between items-center mb-3">
-                <h2 className="text-2xl font-bold text-gray-800">
+              <header className="flex flex-col sm:flex-row justify-between gap-3 sm:items-center mb-3">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
                   {row.title}
                 </h2>
-
-                <div className="flex gap-3">
-                  {/* Prioritas Tugas */}
+                <div className="flex flex-wrap items-center gap-2">
                   <span
                     className={`text-sm font-medium px-3 py-1 rounded-full ${
                       row.priority === "tinggi"
@@ -117,45 +95,33 @@ export default function TaskList({ onedit }) {
                   >
                     Prioritas: {row.priority}
                   </span>
-
-                  {/* Tombol Aksi (Status, Edit, Hapus) */}
-                  <div>
+                  <div className="flex gap-2">
                     <button
-                      onClick={() => {
-                        if (row.status === true) {
-                          unFinishedTask(row.id); // Jika sudah selesai, tandai belum selesai
-                        } else {
-                          finishedTask(row.id); // Jika belum selesai, tandai selesai
-                        }
-                      }}
-                      title={
+                      onClick={() =>
                         row.status === true
-                          ? "Tandai Belum Selesai" // Judul tombol saat status selesai
-                          : "Tandai Selesai" // Judul tombol saat status belum selesai
+                          ? unFinishedTask(row.id)
+                          : finishedTask(row.id)
+                      }
+                      title={
+                        row.status ? "Tandai Belum Selesai" : "Tandai Selesai"
                       }
                     >
-                      {row.status === true ? (
-                        <X className="text-red-500" /> // Ikon 'X' jika status selesai
+                      {row.status ? (
+                        <X className="text-red-500" />
                       ) : (
-                        <CheckCheckIcon className="text-green-500" /> // Ikon ceklis jika status belum selesai
+                        <CheckCheckIcon className="text-green-500" />
                       )}
                     </button>
-
-                    {/* Tombol Edit */}
                     <button title="Edit" onClick={() => onedit(row)}>
                       <EditIcon className="text-sky-500" />
                     </button>
-
-                    {/* Tombol Hapus */}
                     <button onClick={() => DeleteTask(row.id)} title="Buang">
                       <Trash2Icon className="text-rose-500" />
                     </button>
                   </div>
                 </div>
               </header>
-
-              {/* Info Tambahan Tugas (Kategori, Deadline, Status) */}
-              <div className="text-sm text-gray-500 mb-2 flex flex-wrap gap-2">
+              <div className="text-sm text-gray-500 mb-2 flex flex-col sm:flex-row sm:flex-wrap gap-2">
                 <span className="bg-gray-100 px-2 py-1 rounded">
                   Kategori: {row.category}
                 </span>
@@ -172,17 +138,14 @@ export default function TaskList({ onedit }) {
                   {row.status ? "✔ Selesai" : "⏳ Belum selesai"}
                 </span>
               </div>
-
-              {/* Konten Detail Tugas */}
               <div
-                className="ql-editor border-none p-0 text-gray-800"
+                className="ql-editor border-none p-0 text-gray-800 text-sm sm:text-base"
                 dangerouslySetInnerHTML={{ __html: row.content }}
               />
             </li>
           ))}
         </ul>
       ) : (
-        // Teks jika tidak ada tugas yang difilter
         <h1 className="mt-6 text-center text-gray-600">
           Tidak ada tugas dalam kategori ini.
         </h1>

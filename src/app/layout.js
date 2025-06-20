@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import "./globals.css";
 // import SideBar from "./utils/sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -26,7 +27,12 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html className="hydrated" lang="en">
+    <html
+      data-theme="dark"
+      suppressHydrationWarning
+      className="hydrated "
+      lang="en"
+    >
       <head>
         <link rel="manifest" href="/app.webmanifest" />
         <meta name="theme-color" content="#4f46e5" />
@@ -41,7 +47,11 @@ export default function RootLayout({ children }) {
           </main>
         </SidebarProvider>
 
-        <main className="flex-1 bg-neutral-100">{children}</main>
+        <main className="flex-1 dark:bg-gray-950 dark:text-gray-50">
+          <ThemeProvider attribute={"class"} defaultTheme="system" enableSystem>
+            {children}
+          </ThemeProvider>
+        </main>
       </body>
     </html>
   );
