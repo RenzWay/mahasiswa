@@ -54,8 +54,8 @@ export default function Page() {
   }, [now, timeZone]);
 
   return (
-    <section className="min-h-screen flex flex-col dark:text-white dark:bg-gray-950">
-      <header className="flex justify-end px-6 shadow p-4 dark:bg-gray-800 dark:text-white">
+    <section className="h-[100vh] min-h-screen flex flex-col bg-white text-black dark:text-white dark:bg-gray-950">
+      <header className="flex justify-end px-6 shadow p-4 bg-white dark:bg-gray-800 dark:text-white">
         <p className="text-sm">{showDate}</p>
       </header>
 

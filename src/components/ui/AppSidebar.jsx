@@ -51,7 +51,7 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <h1 className="text-center font-bold text-2xl text-zinc-600">
+        <h1 className="text-center font-bold text-2xl text-zinc-800">
           Mahasiswa Center
         </h1>
       </SidebarHeader>

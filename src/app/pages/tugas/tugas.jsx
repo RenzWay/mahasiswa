@@ -7,6 +7,19 @@ import "quill/dist/quill.core.css";
 import "quill/dist/quill.snow.css";
 import hljs from "highlight.js";
 import "highlight.js/styles/github.css";
+import { Calendar22 } from "@/app/utils/calendar";
+import { MobileTimePicker } from "@mui/x-date-pickers";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
+import { auth, db } from "@/firebase/firebase";
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
+import { ref, set, update, onValue } from "firebase/database";
 
 export default function TugasPage() {
   const quillRef = useRef(null);
@@ -19,6 +32,44 @@ export default function TugasPage() {
   const [attachment, setAttachment] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [tugasList, setTugasList] = useState([]);
+
+  useEffect(() => {
+    window.hljs = hljs;
+    import("quill").then((Quill) => {
+      quillRef.current = new Quill.default("#editor", {
+        theme: "snow",
+        modules: {
+          syntax: true,
+          toolbar: "#toolbar-container",
+        },
+        placeholder: "Isi tugas anda...",
+      });
+    });
+
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) return;
+      const tugasRef = ref(db, `tugas/${user.uid}`);
+      onValue(tugasRef, (snapshot) => {
+        const data = snapshot.val();
+        let list = [];
+        if (data) {
+          Object.entries(data).forEach(([id, value]) => {
+            list.push({ id, ...value });
+          });
+        } else {
+          // fallback ke localStorage jika firebase kosong
+          const local = localStorage.getItem("tugas");
+          if (local) {
+            list = JSON.parse(local);
+          }
+        }
+        setTugasList(list);
+      });
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   function loadEditForm(tugas) {
     setTitle(tugas.title);
@@ -33,31 +84,37 @@ export default function TugasPage() {
     if (quillRef.current) {
       quillRef.current.root.innerHTML = tugas.content;
     }
-
     document.getElementById("formTugas").scrollIntoView({ behavior: "smooth" });
   }
 
-  useEffect(() => {
-    window.hljs = hljs;
-    import("quill").then((Quill) => {
-      quillRef.current = new Quill.default("#editor", {
-        theme: "snow",
-        modules: {
-          syntax: true,
-          toolbar: "#toolbar-container",
-        },
-        placeholder: "Isi tugas anda...",
-      });
-    });
-  }, []);
+  const uploadAttachment = async (file) => {
+    if (!file) return "";
+    const storage = getStorage();
+    const fileRef = storageRef(
+      storage,
+      `attachments/${Date.now()}-${file.name}`
+    );
+    await uploadBytes(fileRef, file);
+    const url = await getDownloadURL(fileRef);
+    return url;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const id = randomId();
+
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Harus login terlebih dahulu");
+      return;
+    }
+
+    const id = editMode && editId ? editId : randomId();
     const content = quillRef.current ? quillRef.current.root.innerHTML : "";
+    const attachmentUrl = await uploadAttachment(attachment);
 
     const tugas = {
       id,
+      uid: user.uid,
       title,
       date,
       time,
@@ -65,19 +122,28 @@ export default function TugasPage() {
       category,
       status,
       content,
-      attachment: attachment,
+      attachment: attachmentUrl,
     };
 
-    let tugasLama = JSON.parse(localStorage.getItem("tugas")) || [];
+    const tugasRef = ref(db, `tugas/${user.uid}/${id}`);
     if (editMode) {
-      tugasLama = tugasLama.map((t) => (t.id === editId ? tugas : t));
+      await update(tugasRef, tugas);
     } else {
-      tugasLama.push(tugas);
+      await set(tugasRef, tugas);
     }
 
-    localStorage.setItem("tugas", JSON.stringify(tugasLama));
-    alert("Tugas disimpan ke localStorage!");
+    const localTugas = JSON.parse(localStorage.getItem("tugas")) || [];
+    const updatedLocal = editMode
+      ? localTugas.map((t) => (t.id === id ? tugas : t))
+      : [...localTugas, tugas];
+    localStorage.setItem("tugas", JSON.stringify(updatedLocal));
+    setTugasList(updatedLocal);
 
+    alert("Tugas berhasil disimpan!");
+    resetForm();
+  };
+
+  const resetForm = () => {
     setTitle("");
     setDate("");
     setTime("");
@@ -100,115 +166,105 @@ export default function TugasPage() {
         </nav>
       </header>
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4 max-w-2xl mx-auto bg-white p-6 rounded shadow"
-        id="formTugas"
-      >
-        <h1 className="text-2xl font-bold mb-2 text-center">Tambah Tugas</h1>
-        <div>
-          <label htmlFor="title" className="font-medium">
-            Judul Tugas
-          </label>
-          <input
-            type="text"
-            id="title"
-            className="block w-full border rounded p-2 mt-1"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <label htmlFor="date" className="font-medium">
-              Tanggal Deadline
-            </label>
-            <input
-              type="date"
-              id="date"
-              className="block w-full border rounded p-2 mt-1"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </div>
-          <div className="flex-1">
-            <label htmlFor="time" className="font-medium">
-              Waktu Deadline
-            </label>
-            <input
-              type="time"
-              id="time"
-              className="block w-full border rounded p-2 mt-1"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-            />
-          </div>
-        </div>
-        <div>
-          <label htmlFor="priority" className="font-medium">
-            Prioritas
-          </label>
-          <select
-            id="priority"
-            className="block w-full border rounded p-2 mt-1"
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-          >
-            <option value="tinggi">Tinggi</option>
-            <option value="sedang">Sedang</option>
-            <option value="rendah">Rendah</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="category" className="font-medium">
-            Kategori
-          </label>
-          <select
-            id="category"
-            className="block w-full border rounded p-2 mt-1"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="matkul">Matkul</option>
-            <option value="pribadi">Pribadi</option>
-            <option value="organisasi">Organisasi</option>
-            <option value="lainnya">Lainnya</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="content" className="font-medium">
-            Isi Tugas
-          </label>
-          <ToolBar />
-          <div className="h-56 border rounded" id="editor"></div>
-        </div>
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="status"
-            checked={status}
-            onChange={(e) => setStatus(e.target.checked)}
-          />
-          <label htmlFor="status">Selesai</label>
-        </div>
-        <div>
-          <label htmlFor="attachment" className="font-medium">
-            Lampiran (opsional)
-          </label>
-          <input
-            type="file"
-            id="attachment"
-            className="block w-full mt-1"
-            onChange={(e) => setAttachment(e.target.files[0])}
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded p-2 mt-4"
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4 max-w-2xl mx-auto bg-white p-6 rounded shadow"
+          id="formTugas"
         >
-          Simpan Tugas
-        </button>
-      </form>
+          <h1 className="text-2xl font-bold mb-2 text-center">Tambah Tugas</h1>
+          <div>
+            <label htmlFor="title" className="font-medium">
+              Judul Tugas
+            </label>
+            <input
+              type="text"
+              id="title"
+              className="block w-full border rounded p-2 mt-1"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <Calendar22 setDate={setDate} date={date} />
+            </div>
+            <div className="flex-1">
+              <label htmlFor="time" className="font-medium">
+                Waktu Deadline
+              </label>
+              <MobileTimePicker
+                defaultValue={dayjs()}
+                onChange={(value) => setTime(value.format("HH:mm"))}
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="priority" className="font-medium">
+              Prioritas
+            </label>
+            <select
+              id="priority"
+              className="block w-full border rounded p-2 mt-1"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+            >
+              <option value="tinggi">Tinggi</option>
+              <option value="sedang">Sedang</option>
+              <option value="rendah">Rendah</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="category" className="font-medium">
+              Kategori
+            </label>
+            <select
+              id="category"
+              className="block w-full border rounded p-2 mt-1"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              <option value="matkul">Matkul</option>
+              <option value="pribadi">Pribadi</option>
+              <option value="organisasi">Organisasi</option>
+              <option value="lainnya">Lainnya</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="content" className="font-medium">
+              Isi Tugas
+            </label>
+            <ToolBar />
+            <div className="h-56 border rounded" id="editor"></div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="status"
+              checked={status}
+              onChange={(e) => setStatus(e.target.checked)}
+            />
+            <label htmlFor="status">Selesai</label>
+          </div>
+          <div>
+            <label htmlFor="attachment" className="font-medium">
+              Lampiran (opsional)
+            </label>
+            <input
+              type="file"
+              id="attachment"
+              className="block w-full mt-1"
+              onChange={(e) => setAttachment(e.target.files[0])}
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded p-2 mt-4"
+          >
+            Simpan Tugas
+          </button>
+        </form>
+      </LocalizationProvider>
 
       <div className="w-full px-4 mt-10">
         <div className="w-full max-w-3xl mx-auto">
@@ -220,7 +276,7 @@ export default function TugasPage() {
         </div>
       </div>
 
-      <TaskList onedit={loadEditForm} />
+      <TaskList onedit={loadEditForm} tugas={tugasList} />
     </section>
   );
 }

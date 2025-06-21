@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "mahasiswa-center-10"
+  },
+  "targets": {
+    "mahasiswa-center": {
+      "hosting": {
+        "mahasiswa-center-10": [
+          "mahasiswa-center"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

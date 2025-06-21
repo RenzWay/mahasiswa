@@ -45,7 +45,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
     "express": "^5.1.0",
-    "firebase": "^11.9.0",
+    "firebase": "^11.9.1",
     "highlight.js": "^11.11.1",
     "lucide-react": "^0.513.0",
     "mongoose": "^8.15.1",
