@@ -61,7 +61,7 @@ export default function CatatanPage() {
 
     if (editMode) {
       catatanBaru = catatanLama.map((t) =>
-        t.id === editId ? { ...catatanObj, id: editId } : t
+        t.id === editId ? { ...catatanObj, id: editId } : t,
       );
     } else {
       catatanBaru = [...catatanLama, catatanObj];

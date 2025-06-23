@@ -28,7 +28,7 @@ export default function NoteList({ onEdit }) {
 
   const toggleFavorite = (id) => {
     const updated = catatan.map((item) =>
-      item.id === id ? { ...item, favorite: !item.favorite } : item
+      item.id === id ? { ...item, favorite: !item.favorite } : item,
     );
     setCatatan(updated);
     localStorage.setItem("catatan", JSON.stringify(updated));

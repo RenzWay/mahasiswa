@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🎓 Mahasiswa Center
 
-## Getting Started
+**Mahasiswa Center** adalah aplikasi web yang dibuat untuk membantu mahasiswa mengelola kebutuhan kuliah — seperti tugas, catatan, dan jadwal — dalam satu tempat yang simpel dan modern.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Fitur Utama
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- ✅ Tambah, edit, dan hapus **tugas kuliah**
+- ✅ Buat **catatan pribadi** dengan editor rich text (Quill)
+- ✅ Atur **jadwal harian / kuliah**
+- 🌙 **Mode Gelap** _(masih pengembangan)_
+- 📱 **PWA Support** _(installable + offline, sebagian fungsi masih dikembangkan)_
+- 🔐 **Autentikasi** _(versi beta, belum stabil)_
+- 🗂️ **Upload file** _(belum tersedia)_
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🧰 Teknologi yang Digunakan
 
-## Learn More
+### Frontend:
 
-To learn more about Next.js, take a look at the following resources:
+- **Next.js** (React Framework)
+- **Tailwind CSS** + **shadcn/ui**
+- **Material UI (MUI)** _(beberapa komponen)_
+- **Quill.js** (rich text editor)
+- **date-fns** (manipulasi tanggal & waktu)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Backend (belum diimplementasikan):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Express.js** _(masih eksplorasi)_
 
-## Deploy on Vercel
+### Lainnya:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Firebase Realtime Database**
+- **Workbox (PWA support)**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🚧 Status Proyek
+
+🧪 Proyek masih dalam tahap pengembangan aktif:
+
+> Beberapa fitur utama sudah berjalan, namun beberapa lainnya (auth, PWA, backend, dll) **masih dalam pengerjaan / eksplorasi**.
+
+---
+
+## 📦 Cara Menjalankan
+
+1. Clone repo ini:
+
+   ```bash
+   git clone https://github.com/username/mahasiswa-center.git
+   cd mahasiswa-center
+   ```

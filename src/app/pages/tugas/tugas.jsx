@@ -92,7 +92,7 @@ export default function TugasPage() {
     const storage = getStorage();
     const fileRef = storageRef(
       storage,
-      `attachments/${Date.now()}-${file.name}`
+      `attachments/${Date.now()}-${file.name}`,
     );
     await uploadBytes(fileRef, file);
     const url = await getDownloadURL(fileRef);

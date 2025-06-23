@@ -62,8 +62,8 @@ export default function TaskList({ onedit, tugas = [] }) {
                         row.priority === "tinggi"
                           ? "bg-red-100 text-red-700"
                           : row.priority === "sedang"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-green-100 text-green-700"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-green-100 text-green-700"
                       }`}
                     >
                       Prioritas: {row.priority}
@@ -73,19 +73,19 @@ export default function TaskList({ onedit, tugas = [] }) {
                         onClick={() => {
                           if (row.status) {
                             const updated = tugas.map((t) =>
-                              t.id === row.id ? { ...t, status: false } : t
+                              t.id === row.id ? { ...t, status: false } : t,
                             );
                             localStorage.setItem(
                               "tugas",
-                              JSON.stringify(updated)
+                              JSON.stringify(updated),
                             );
                           } else {
                             const updated = tugas.map((t) =>
-                              t.id === row.id ? { ...t, status: true } : t
+                              t.id === row.id ? { ...t, status: true } : t,
                             );
                             localStorage.setItem(
                               "tugas",
-                              JSON.stringify(updated)
+                              JSON.stringify(updated),
                             );
                           }
                           location.reload();
@@ -108,7 +108,7 @@ export default function TaskList({ onedit, tugas = [] }) {
                           const updated = tugas.filter((t) => t.id !== row.id);
                           localStorage.setItem(
                             "tugas",
-                            JSON.stringify(updated)
+                            JSON.stringify(updated),
                           );
                           location.reload();
                         }}

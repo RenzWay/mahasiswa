@@ -49,7 +49,7 @@ export default function Page() {
   useEffect(() => {
     const zonedDate = toZonedTime(now, timeZone);
     setShowDate(
-      format(zonedDate, "eeee, MM/dd/yyyy - HH:mm:ss 'WIB'", { locale: id })
+      format(zonedDate, "eeee, MM/dd/yyyy - HH:mm:ss 'WIB'", { locale: id }),
     );
   }, [now, timeZone]);
 
