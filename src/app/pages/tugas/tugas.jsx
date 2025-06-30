@@ -3,23 +3,21 @@
 import ToolBar from "./toolbar";
 import TaskList from "./tasklist";
 import { useEffect, useRef, useState } from "react";
-import "quill/dist/quill.core.css";
-import "quill/dist/quill.snow.css";
-import hljs from "highlight.js";
-import "highlight.js/styles/github.css";
 import { Calendar22 } from "@/app/utils/calendar";
 import { MobileTimePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-import { auth, db } from "@/firebase/firebase";
+import "quill/dist/quill.core.css";
+import "quill/dist/quill.snow.css";
+import hljs from "highlight.js";
+import "highlight.js/styles/github.css";
 import {
-  getStorage,
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL,
-} from "firebase/storage";
-import { ref, set, update, onValue } from "firebase/database";
+  supabase,
+  uploadToSupabase,
+  saveTugasToSupabase,
+  getTugasByUser,
+} from "@/app/model/supabaseClient";
 
 export default function TugasPage() {
   const quillRef = useRef(null);
@@ -47,28 +45,15 @@ export default function TugasPage() {
       });
     });
 
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
-      const tugasRef = ref(db, `tugas/${user.uid}`);
-      onValue(tugasRef, (snapshot) => {
-        const data = snapshot.val();
-        let list = [];
-        if (data) {
-          Object.entries(data).forEach(([id, value]) => {
-            list.push({ id, ...value });
-          });
-        } else {
-          // fallback ke localStorage jika firebase kosong
-          const local = localStorage.getItem("tugas");
-          if (local) {
-            list = JSON.parse(local);
-          }
-        }
-        setTugasList(list);
-      });
-    });
 
-    return () => unsubscribe();
+      const list = await getTugasByUser(user.id); // ✅ KIRIM uid KE SINI
+      setTugasList(list);
+    })();
   }, []);
 
   function loadEditForm(tugas) {
@@ -78,7 +63,7 @@ export default function TugasPage() {
     setPriority(tugas.priority);
     setCategory(tugas.category);
     setStatus(tugas.status);
-    setAttachment(tugas.attachment);
+    setAttachment(null);
     setEditId(tugas.id);
     setEditMode(true);
     if (quillRef.current) {
@@ -87,34 +72,26 @@ export default function TugasPage() {
     document.getElementById("formTugas").scrollIntoView({ behavior: "smooth" });
   }
 
-  const uploadAttachment = async (file) => {
-    if (!file) return "";
-    const storage = getStorage();
-    const fileRef = storageRef(
-      storage,
-      `attachments/${Date.now()}-${file.name}`,
-    );
-    await uploadBytes(fileRef, file);
-    const url = await getDownloadURL(fileRef);
-    return url;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const user = auth.currentUser;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (!user) {
-      alert("Harus login terlebih dahulu");
+      alert("Harus login dulu");
       return;
     }
 
-    const id = editMode && editId ? editId : randomId();
-    const content = quillRef.current ? quillRef.current.root.innerHTML : "";
-    const attachmentUrl = await uploadAttachment(attachment);
+    // const id = editMode && editId ? editId : randomId();
+    const id = Date.now();
+    const content = quillRef.current?.root.innerHTML ?? "";
+    const attachmentUrl = await uploadToSupabase(attachment);
 
     const tugas = {
       id,
-      uid: user.uid,
+      uid: user.id, // 🟢 ISI UID DI SINI!
       title,
       date,
       time,
@@ -125,22 +102,19 @@ export default function TugasPage() {
       attachment: attachmentUrl,
     };
 
-    const tugasRef = ref(db, `tugas/${user.uid}/${id}`);
-    if (editMode) {
-      await update(tugasRef, tugas);
+    const success = await saveTugasToSupabase(tugas);
+
+    if (success) {
+      const updated = editMode
+        ? tugasList.map((t) => (t.id === id ? tugas : t))
+        : [...tugasList, tugas];
+
+      setTugasList(updated);
+      resetForm();
+      alert("Tugas berhasil disimpan!");
     } else {
-      await set(tugasRef, tugas);
+      alert("Gagal menyimpan tugas.");
     }
-
-    const localTugas = JSON.parse(localStorage.getItem("tugas")) || [];
-    const updatedLocal = editMode
-      ? localTugas.map((t) => (t.id === id ? tugas : t))
-      : [...localTugas, tugas];
-    localStorage.setItem("tugas", JSON.stringify(updatedLocal));
-    setTugasList(updatedLocal);
-
-    alert("Tugas berhasil disimpan!");
-    resetForm();
   };
 
   const resetForm = () => {
@@ -160,11 +134,9 @@ export default function TugasPage() {
 
   return (
     <section>
-      <header>
-        <nav className="flex items-center justify-between px-6 py-4 bg-sky-400 text-white rounded-b-sm shadow-md mb-6">
-          <h1 className="text-2xl font-bold">📌 Tugas</h1>
-        </nav>
-      </header>
+      <nav className="flex items-center justify-between px-6 py-4 bg-sky-400 text-white rounded-b-sm shadow-md mb-6">
+        <h1 className="text-2xl font-bold">📌 Tugas</h1>
+      </nav>
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <form
@@ -173,94 +145,69 @@ export default function TugasPage() {
           id="formTugas"
         >
           <h1 className="text-2xl font-bold mb-2 text-center">Tambah Tugas</h1>
-          <div>
-            <label htmlFor="title" className="font-medium">
-              Judul Tugas
-            </label>
-            <input
-              type="text"
-              id="title"
-              className="block w-full border rounded p-2 mt-1"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
+
+          <input
+            type="text"
+            id="title"
+            className="block w-full border rounded p-2"
+            placeholder="Judul Tugas"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <Calendar22 setDate={setDate} date={date} />
             </div>
             <div className="flex-1">
-              <label htmlFor="time" className="font-medium">
-                Waktu Deadline
-              </label>
+              <label className="font-medium block mb-1">Waktu Deadline</label>
               <MobileTimePicker
                 defaultValue={dayjs()}
                 onChange={(value) => setTime(value.format("HH:mm"))}
               />
             </div>
           </div>
-          <div>
-            <label htmlFor="priority" className="font-medium">
-              Prioritas
-            </label>
-            <select
-              id="priority"
-              className="block w-full border rounded p-2 mt-1"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-            >
-              <option value="tinggi">Tinggi</option>
-              <option value="sedang">Sedang</option>
-              <option value="rendah">Rendah</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="category" className="font-medium">
-              Kategori
-            </label>
-            <select
-              id="category"
-              className="block w-full border rounded p-2 mt-1"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              <option value="matkul">Matkul</option>
-              <option value="pribadi">Pribadi</option>
-              <option value="organisasi">Organisasi</option>
-              <option value="lainnya">Lainnya</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="content" className="font-medium">
-              Isi Tugas
-            </label>
-            <ToolBar />
-            <div className="h-56 border rounded" id="editor"></div>
-          </div>
-          <div className="flex items-center gap-2">
+
+          <select
+            className="block w-full border rounded p-2"
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+          >
+            <option value="tinggi">Tinggi</option>
+            <option value="sedang">Sedang</option>
+            <option value="rendah">Rendah</option>
+          </select>
+
+          <select
+            className="block w-full border rounded p-2"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="matkul">Matkul</option>
+            <option value="pribadi">Pribadi</option>
+            <option value="organisasi">Organisasi</option>
+            <option value="lainnya">Lainnya</option>
+          </select>
+
+          <ToolBar />
+          <div className="h-56 border rounded" id="editor"></div>
+
+          <label>
             <input
               type="checkbox"
-              id="status"
               checked={status}
               onChange={(e) => setStatus(e.target.checked)}
             />
-            <label htmlFor="status">Selesai</label>
-          </div>
-          <div>
-            <label htmlFor="attachment" className="font-medium">
-              Lampiran (opsional)
-            </label>
-            <input
-              type="file"
-              id="attachment"
-              className="block w-full mt-1"
-              onChange={(e) => setAttachment(e.target.files[0])}
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded p-2 mt-4"
-          >
+            Selesai
+          </label>
+
+          <input
+            type="file"
+            className="block w-full mt-1"
+            onChange={(e) => setAttachment(e.target.files[0])}
+          />
+
+          <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded p-2 mt-4">
             Simpan Tugas
           </button>
         </form>
@@ -271,7 +218,7 @@ export default function TugasPage() {
           <input
             type="search"
             placeholder="Cari tugas... 🔍"
-            className="w-full px-4 py-3 pl-12 rounded-lg border border-gray-300 bg-white text-gray-700 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400 transition-all"
+            className="w-full px-4 py-3 pl-12 rounded-lg border bg-white shadow-md"
           />
         </div>
       </div>
