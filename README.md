@@ -51,5 +51,5 @@
 
    ```bash
    git clone https://github.com/username/mahasiswa-center.git
-   cd mahasiswa-center
+   cd mahasiswa
    ```
