@@ -24,6 +24,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning className="hydrated">
       <head>
+        <link rel="icon" href="/scholar.svg" />
         <link rel="manifest" href="/app.webmanifest" />
         <meta name="theme-color" content="#4f46e5" />
       </head>

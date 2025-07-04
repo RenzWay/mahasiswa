@@ -32,7 +32,7 @@ export default function LoginPage() {
   return (
     <section className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-100 to-blue-300">
       <form
-        className="w-full max-w-sm bg-white p-8 rounded-xl shadow-lg flex flex-col gap-4"
+        className="w-full max-w-sm text-black bg-white p-8 rounded-xl shadow-lg flex flex-col gap-4"
         onSubmit={handleLogin}
       >
         <h2 className="text-2xl font-bold text-blue-700 mb-2 text-center">

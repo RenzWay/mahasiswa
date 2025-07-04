@@ -13,9 +13,8 @@ import "quill/dist/quill.snow.css";
 import hljs from "highlight.js";
 import "highlight.js/styles/github.css";
 import { auth } from "@/firebase/firebase";
-import { getTugasByUser, saveTugasToFirebase } from "@/firebase/tugasFirebase";
+import { getTugasByUser, saveTugasToFirestore } from "@/app/model/model";
 import { uploadToFirebase } from "@/firebase/uploadFirebase";
-import { getAuth } from "firebase/auth";
 
 export default function TugasPage() {
   const quillRef = useRef(null);
@@ -78,6 +77,7 @@ export default function TugasPage() {
 
     const id = Date.now();
     const content = quillRef.current?.root.innerHTML ?? "";
+    // uploadToFirebase tetap dipakai untuk file
     const attachmentUrl = await uploadToFirebase(attachment);
 
     const tugas = {
@@ -93,7 +93,7 @@ export default function TugasPage() {
       attachment: attachmentUrl,
     };
 
-    const success = await saveTugasToFirebase(tugas);
+    const success = await saveTugasToFirestore(useruid, tugas);
 
     if (success) {
       const updated = editMode

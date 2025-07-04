@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { EditIcon, CheckCheckIcon, Trash2Icon, X } from "lucide-react";
+import { deleteTugas } from "@/app/model/model";
 
 export default function TaskList({ onedit, tugas = [] }) {
   const [active, setActive] = useState("semua");
@@ -19,31 +20,23 @@ export default function TaskList({ onedit, tugas = [] }) {
         Daftar Tugas
       </h1>
       <div className="flex flex-wrap gap-2 sm:gap-4 mt-4">
-        <button
-          className={`px-4 py-2 rounded transition-all duration-200 ${
-            active === "semua" ? "bg-blue-500 text-white" : "bg-neutral-400"
-          }`}
-          onClick={() => setActive("semua")}
-        >
-          Semua
-        </button>
-        <button
-          className={`px-4 py-2 rounded transition-all duration-200 ${
-            active === "belum" ? "bg-blue-500 text-white" : "bg-neutral-400"
-          }`}
-          onClick={() => setActive("belum")}
-        >
-          Belum selesai
-        </button>
-        <button
-          className={`px-4 py-2 rounded transition-all duration-200 ${
-            active === "selesai" ? "bg-blue-500 text-white" : "bg-neutral-400"
-          }`}
-          onClick={() => setActive("selesai")}
-        >
-          Selesai
-        </button>
+        {[
+          { label: "Semua", value: "semua" },
+          { label: "Belum selesai", value: "belum" },
+          { label: "Selesai", value: "selesai" },
+        ].map(({ label, value }) => (
+          <button
+            key={value}
+            className={`px-4 py-2 rounded transition-all duration-200 ${
+              active === value ? "bg-blue-500 text-white" : "bg-neutral-400"
+            }`}
+            onClick={() => setActive(value)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
+
       <div className="mt-6 min-h-[150px]">
         {filteredTugas.length > 0 ? (
           <ul className="flex flex-col gap-6">
@@ -71,23 +64,13 @@ export default function TaskList({ onedit, tugas = [] }) {
                     <div className="flex gap-2">
                       <button
                         onClick={() => {
-                          if (row.status) {
-                            const updated = tugas.map((t) =>
-                              t.id === row.id ? { ...t, status: false } : t,
-                            );
-                            localStorage.setItem(
-                              "tugas",
-                              JSON.stringify(updated),
-                            );
-                          } else {
-                            const updated = tugas.map((t) =>
-                              t.id === row.id ? { ...t, status: true } : t,
-                            );
-                            localStorage.setItem(
-                              "tugas",
-                              JSON.stringify(updated),
-                            );
-                          }
+                          const updated = tugas.map((t) =>
+                            t.id === row.id ? { ...t, status: !t.status } : t,
+                          );
+                          localStorage.setItem(
+                            "tugas",
+                            JSON.stringify(updated),
+                          );
                           location.reload();
                         }}
                         title={
@@ -104,13 +87,15 @@ export default function TaskList({ onedit, tugas = [] }) {
                         <EditIcon className="text-sky-500" />
                       </button>
                       <button
-                        onClick={() => {
-                          const updated = tugas.filter((t) => t.id !== row.id);
-                          localStorage.setItem(
-                            "tugas",
-                            JSON.stringify(updated),
-                          );
-                          location.reload();
+                        onClick={async () => {
+                          const uid = localStorage.getItem("useruid");
+                          const success = await deleteTugas(uid, row.id);
+                          if (success) {
+                            alert("Berhasil menghapus");
+                            location.reload();
+                          } else {
+                            alert("Gagal menghapus");
+                          }
                         }}
                         title="Buang"
                       >

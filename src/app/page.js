@@ -6,7 +6,7 @@ export default function Home() {
   useEffect(() => {
     const uid = localStorage.getItem("useruid");
     if (!uid) {
-      window.location.href = "/auth/login";
+      window.location.href = "/auth/register";
     }
   }, []);
   return (
