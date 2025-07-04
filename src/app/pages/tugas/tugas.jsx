@@ -12,12 +12,10 @@ import "quill/dist/quill.core.css";
 import "quill/dist/quill.snow.css";
 import hljs from "highlight.js";
 import "highlight.js/styles/github.css";
-import {
-  supabase,
-  uploadToSupabase,
-  saveTugasToSupabase,
-  getTugasByUser,
-} from "@/app/model/supabaseClient";
+import { auth } from "@/firebase/firebase";
+import { getTugasByUser, saveTugasToFirebase } from "@/firebase/tugasFirebase";
+import { uploadToFirebase } from "@/firebase/uploadFirebase";
+import { getAuth } from "firebase/auth";
 
 export default function TugasPage() {
   const quillRef = useRef(null);
@@ -46,12 +44,9 @@ export default function TugasPage() {
     });
 
     (async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const list = await getTugasByUser(user.id); // ✅ KIRIM uid KE SINI
+      const useruid = localStorage.getItem("useruid");
+      if (!useruid) return;
+      const list = await getTugasByUser(useruid);
       setTugasList(list);
     })();
   }, []);
@@ -75,23 +70,19 @@ export default function TugasPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
+    const useruid = localStorage.getItem("useruid");
+    if (!useruid) {
       alert("Harus login dulu");
       return;
     }
 
-    // const id = editMode && editId ? editId : randomId();
     const id = Date.now();
     const content = quillRef.current?.root.innerHTML ?? "";
-    const attachmentUrl = await uploadToSupabase(attachment);
+    const attachmentUrl = await uploadToFirebase(attachment);
 
     const tugas = {
       id,
-      uid: user.id, // 🟢 ISI UID DI SINI!
+      uid: useruid,
       title,
       date,
       time,
@@ -102,7 +93,7 @@ export default function TugasPage() {
       attachment: attachmentUrl,
     };
 
-    const success = await saveTugasToSupabase(tugas);
+    const success = await saveTugasToFirebase(tugas);
 
     if (success) {
       const updated = editMode

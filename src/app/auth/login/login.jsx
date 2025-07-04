@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { supabase } from "@/app/model/supabaseClient";
+import { auth } from "@/firebase/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -14,19 +15,18 @@ export default function LoginPage() {
       return;
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      const user = userCredential.user;
+      localStorage.setItem("useruid", user.uid);
+      window.location.href = "/pages"; // redirect
+    } catch (error) {
       alert("Login gagal: " + error.message);
-      return;
     }
-
-    const user = data.user;
-    localStorage.setItem("useruid", user.id);
-    window.location.href = "/pages"; // redirect
   };
 
   return (

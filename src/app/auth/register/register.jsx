@@ -1,7 +1,12 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/app/model/supabaseClient";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { auth } from "@/firebase/firebase";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -16,24 +21,19 @@ export default function RegisterPage() {
       return;
     }
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { name },
-      },
-    });
-
-    if (error) {
-      alert("Gagal daftar: " + error.message);
-      return;
-    }
-
-    if (data.user) {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      await updateProfile(userCredential.user, { displayName: name });
       localStorage.setItem("userName", name);
-      localStorage.setItem("useruid", data.user.id); // 🟢 simpan UID!
+      localStorage.setItem("useruid", userCredential.user.uid);
       alert("Registrasi berhasil!");
-      window.location.href = "/auth/login"; // opsional: langsung redirect
+      window.location.href = "/auth/login";
+    } catch (error) {
+      alert("Gagal daftar: " + error.message);
     }
   };
 

@@ -1,1 +1,1 @@
-import { supabase } from "./supabaseClient";
+// Hapus import supabase, gunakan firebase jika perlu
